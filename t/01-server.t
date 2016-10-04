@@ -4,7 +4,6 @@ use Modern::Perl;
 
 use Test::More;
 
-use OLED::Server;
 use OLED::Client;
 
 use t::IPC;

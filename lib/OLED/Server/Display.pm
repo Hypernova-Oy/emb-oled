@@ -5,6 +5,12 @@ use Carp qw(cluck confess);
 
 use OLED::us2066;
 
+=head1 OLED::Server::Display
+
+Handles the socket API requests and operates the given OLED displays
+
+=cut
+
 sub new {
     my ($class, $params) = @_;
 
@@ -29,6 +35,13 @@ sub _validateParams {
 
 =cut
 
+my %dispatchTable = (
+    printRow       => sub { OLED::us2066::printRow(@_) },
+    readRow        => sub { return OLED::us2066::readRow(@_) },
+    doubleLineText => sub { OLED::us2066::doubleLineText(@_) },
+    displayOnOff   => sub { OLED::us2066::displayOnOff(@_) },
+);
+
 sub handleMessage {
     my ($self, $msg) = @_;
 
@@ -38,19 +51,9 @@ sub handleMessage {
 
     my ($subroutine, $params) = _splitMessage($msg);
 
-    if ($msg =~ /^printRow\((.*)\);$/) {
-        my @params = split(/\t/, $1);
-        OLED::us2066::printRow(@params);
-        return "200 OK";
-    }
-    elsif ($msg =~ /^doubleLineText\((.*)\);$/) {
-        my @params = split(/\t/, $1);
-        OLED::us2066::doubleLineText(@params);
-        return "200 OK";
-    }
-    elsif ($msg =~ /^displayOnOff\((.*)\);$/) {
-        my @params = split(/\t/, $1);
-        OLED::us2066::displayOnOff(@params);
+    if ($dispatchTable{$subroutine}) {
+        my $rv = $dispatchTable{$subroutine}(@$params);
+        return "200 OK $rv" if $rv;
         return "200 OK";
     }
 

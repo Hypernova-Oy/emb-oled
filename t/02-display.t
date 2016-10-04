@@ -9,9 +9,9 @@ use Time::HiRes;
 use OLED::Server::Display;
 
 my @rows = (
-    "  LED TO THE RIVER  ",
-    "  MIDSUMMER I WAVE  ",
-    "A 'V' OF BLACK SWANS",
+    "  LED TÖ THE RIVER  ",
+    "  MIDSUMMER I WÄVE  ",
+    "A 'V' OF BLÄCK SWÄNS",
     " WITH HOPE TO GRAVE ",
     "                    ",
     "                    ",
@@ -36,6 +36,8 @@ sub oledDisplay {
     is($reply, "200 OK", "Print row 3");
     $reply = $display->handleMessage("printRow(3\t$rows[3]);");
     is($reply, "200 OK", "Print row 4");
+    $reply = $display->handleMessage("readRow(3\t                    );");
+    is($reply, "200 OK $rows[3]", "Read row 4");
 
     Time::HiRes::usleep(500000);
 

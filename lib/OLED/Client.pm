@@ -50,6 +50,46 @@ sub _send {
     return $reply;
 }
 
+
+
+
+
+=head1 OLED::Client display interface functions
+
+Contains the subroutines to generate the proper socket interface messages to perform the given actions.
+
+=cut
+
+sub printRow {
+    my ($self, $index, $text) = @_;
+    return $self->_send("printRow($index\t$text);");
+}
+
+sub readRow {
+    my ($self, $index) = @_;
+    return $self->_send("readRow($index\t                    );");
+}
+
+=head2 doubleLineText
+
+See OLED::us2066 for the constants to use
+
+=cut
+
+sub doubleLineText {
+    my ($self, $constant) = @_;
+    return $self->_send("doubleLineText($constant);");
+}
+
+sub displayOnOff {
+    my ($self, $on, $cursor, $blink) = @_;
+    return $self->_send("displayOnOff($on\t$cursor\t$blink);");
+}
+
+
+
+
+
 sub DESTROY {
     my ($self) = @_;
 
