@@ -4,6 +4,7 @@ use Modern::Perl;
 use Carp qw(cluck confess);
 
 use IO::Socket::UNIX;
+use OLED::Server::Display;
 
 use base qw(OLED);
 
@@ -19,8 +20,9 @@ sub new {
         Listen => 1,
     );
     $self->socketConnectedSuccesfully();
-
     $self->{socket}->timeout( $self->getTimeout() );
+
+    $self->{display} = OLED::Server::Display->new({CSPin => $self->getSPICSGPIOPin(0)});
 
     return $self;
 }
@@ -38,7 +40,7 @@ sub start {
                 while($buffer = <$conn>) {
                     chomp($buffer);
                     print "Server got: $buffer\n" if $self->{verbose};
-                    my $reply = $self->handleMessage($buffer);
+                    my $reply = $self->{display}->handleMessage($buffer);
                     print "Server send: $reply\n" if $self->{verbose};
                     $conn->send($reply."\n"); #Make sure there is a newline at the end of the message so the connection wont hang while waiting for the terminator character
                 }
@@ -50,22 +52,6 @@ sub start {
             cluck($@);
         }
     }
-}
-
-=head2 handleMessage
-
-@PARAM1 String, the received message
-
-=cut
-
-sub handleMessage {
-    my ($self, $msg) = @_;
-
-    if ($msg eq "Hello server!") {
-        return "Hello client!";
-    }
-
-    return "";
 }
 
 sub DESTROY {

@@ -23,13 +23,13 @@ sub oledServer {
 
     ##Sending multiple newlines many times can crash the server if newlines are not escaped
     $reply = $oledClient->_send("crash\nthe\nserver\n");
-    is($reply, "", "Multiple newline crash prevention 1 ok");
+    is($reply, "404 command not found", "Multiple newline crash prevention 1 ok");
     $reply = $oledClient->_send("fight\nthe\npower");
-    is($reply, "", "Multiple newline crash prevention 2 ok");
+    is($reply, "404 command not found", "Multiple newline crash prevention 2 ok");
     $reply = $oledClient->_send("yankee\ngo\nhome");
-    is($reply, "", "Multiple newline crash prevention 3 ok");
+    is($reply, "404 command not found", "Multiple newline crash prevention 3 ok");
     $reply = $oledClient->_send("this\nshould\ndo\nit");
-    is($reply, "", "Multiple newline crash prevention 4 ok");
+    is($reply, "404 command not found", "Multiple newline crash prevention 4 ok");
 
     $reply = $oledClient->_send("Hello server!");
     is($reply, "Hello client!", "Server-client handshake 2 ok");
@@ -38,7 +38,7 @@ sub oledServer {
     is($reply, "Hello client!", "Server-client handshake 3 ok");
 
     $reply = $oledClient->_send("");
-    is($reply, "", "Server-client empty message ok");
+    is($reply, "404 command not found", "Server-client empty message ok");
 
     };
     if ($@) {

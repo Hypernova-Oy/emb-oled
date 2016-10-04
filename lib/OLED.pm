@@ -46,5 +46,18 @@ sub getSocketPath {
 sub getTimeout {
     return shift->{Timeout};
 }
+sub getSPICSGPIOPins {
+    return shift->{SPICSGPIOPins};
+}
+
+=head getSPICSGPIOPin
+
+@PARAM1, Integer, GPIO pin index
+
+=cut
+
+sub getSPICSGPIOPin {
+    return shift->{SPICSGPIOPins}->[shift];
+}
 
 1;
