@@ -13,7 +13,7 @@ use OLED::Server;
 
 my $help;
 my $verbose = 0;
-my ($confFile);
+my $confFile = "/etc/emb-oled/server.conf";
 
 
 GetOptions(
