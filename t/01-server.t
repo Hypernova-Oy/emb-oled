@@ -1,0 +1,51 @@
+#!/usr/bin/perl
+
+use Modern::Perl;
+
+use Test::More;
+
+use OLED::Server;
+use OLED::Client;
+
+use t::IPC;
+
+subtest "Start the OLED-server and receive a connection", \&oledServer;
+sub oledServer {
+    my ($oledClient, $oledPid, $reply);
+    eval {
+
+    $oledPid = t::IPC::forkOLEDServer('t/server.conf');
+
+    $oledClient = OLED::Client->new({configFile => 't/server.conf'});
+
+    $reply = $oledClient->_send("Hello server!");
+    is($reply, "Hello client!", "Server-client handshake 1 ok");
+
+    ##Sending multiple newlines many times can crash the server if newlines are not escaped
+    $reply = $oledClient->_send("crash\nthe\nserver\n");
+    is($reply, "", "Multiple newline crash prevention 1 ok");
+    $reply = $oledClient->_send("fight\nthe\npower");
+    is($reply, "", "Multiple newline crash prevention 2 ok");
+    $reply = $oledClient->_send("yankee\ngo\nhome");
+    is($reply, "", "Multiple newline crash prevention 3 ok");
+    $reply = $oledClient->_send("this\nshould\ndo\nit");
+    is($reply, "", "Multiple newline crash prevention 4 ok");
+
+    $reply = $oledClient->_send("Hello server!");
+    is($reply, "Hello client!", "Server-client handshake 2 ok");
+
+    $reply = $oledClient->_send("Hello server!");
+    is($reply, "Hello client!", "Server-client handshake 3 ok");
+
+    $reply = $oledClient->_send("");
+    is($reply, "", "Server-client empty message ok");
+
+    };
+    if ($@) {
+        ok(0, $@);
+    }
+
+    kill 'TERM', $oledPid; #Trigger the child process cleanup signal handler
+}
+
+done_testing();

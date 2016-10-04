@@ -1,0 +1,59 @@
+#!/usr/bin/perl
+
+# Copyright 2016 Koha-Suomi
+#
+
+use Modern::Perl;
+use Carp;
+use Getopt::Long qw(:config no_ignore_case);
+use POSIX();
+use Data::Dumper;
+
+use OLED::Server;
+
+my $help;
+my $verbose = 0;
+my ($confFile);
+
+
+GetOptions(
+    'h|help'                      => \$help,
+    'v|verbose:i'                 => \$verbose,
+    'c:s'                         => \$confFile,
+);
+
+my $usage = <<USAGE;
+
+An OLED display server managing OLED displays over SPI
+
+USAGE
+
+if ($help) {
+  print $usage;
+  exit 0;
+}
+
+
+my $oled = OLED::Server->new({configFile => $confFile, verbose => $verbose});
+
+##Introduce signal handlers
+sub gracefullyTerminate {
+  my ($signal) = @_;
+  print "Exiting through signal '$signal'\n";
+#  $oled->DESTROY();
+  exit(0); #Interrupt the handler to trigger graceful termination, including calling DESTROY on objects.
+}
+$SIG{USR1} = sub {
+  print Data::Dumper::Dumper($oled);
+};
+$SIG{HUP} = sub {
+  gracefullyTerminate($_[0]);
+};
+$SIG{INT} = sub {
+  gracefullyTerminate($_[0]);
+};
+$SIG{TERM} = sub {
+  gracefullyTerminate($_[0]);
+};
+
+$oled->start();
