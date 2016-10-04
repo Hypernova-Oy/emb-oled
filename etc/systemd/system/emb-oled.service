@@ -1,0 +1,16 @@
+[Unit]
+Description=OLED display daemon
+
+[Service]
+Type=idle
+User=root
+WorkingDirectory=/home/pi/emb-oled
+ExecStart=/usr/local/bin/oled_server
+
+RestartSec=5s
+Restart=always
+
+PrivateTmp=yes
+
+[Install]
+WantedBy=multi-user.target
