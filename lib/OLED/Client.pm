@@ -10,7 +10,7 @@ use base qw(OLED);
 sub new {
     my ($class, $params) = @_;
 
-    my $self = __PACKAGE__->_loadConfig($params->{configFile});
+    my $self = $class->_loadConfig($params->{configFile});
     $self = bless($self, $class);
 
     return $self;
@@ -26,6 +26,19 @@ sub _connect {
     $self->socketConnectedSuccesfully();
     #$self->{socket}->autoflush(1);
     return $self->{socket};
+}
+
+=head2 endTransaction
+
+Call this after you have finished with your user transcation with the oled-server so it can clear the screen.
+
+=cut
+
+sub endTransaction {
+    my ($self) = @_;
+
+    $self->{socket}->close();
+    $self->{socket} = undef;
 }
 
 =head2 _send
@@ -46,7 +59,7 @@ sub _send {
     my $reply = $socket->getline();
     chomp($reply);
 
-    #$socket->close();
+    #$self->endTransaction(); #Call this to end the transaction after you have sent whatever messages need sending.
     return $reply;
 }
 

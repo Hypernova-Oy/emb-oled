@@ -21,7 +21,7 @@ sub socketConnectedSuccesfully {
 
 sub _loadConfig {
     my ($class, $configFile) = @_;
-    my $c = new Config::Simple($configFile)
+    my $c = new Config::Simple($configFile || "/etc/emb-oled/server.conf")
 	|| exitWithError(Config::Simple->error());
     $c = $c->vars();
 
@@ -35,6 +35,10 @@ sub _loadConfig {
 
     unless ($c->{SocketPath}) {
         confess("Configuration parameter 'SocketPath' is undefined.");
+    }
+
+    unless ($c->{ClearTimeout}) {
+        confess("Configuration parameter 'ClearTimeout' is undefined.");
     }
 
     return $c;

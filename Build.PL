@@ -15,6 +15,7 @@ my $build = Module::Build->new
         'Time::HiRes' => '1.9740',
         'Config::Simple' => '4.58',
         'IO::Socket::UNIX' => '1.25',
+        'Sys::SigAction' => '0.23',
      },
 
     );

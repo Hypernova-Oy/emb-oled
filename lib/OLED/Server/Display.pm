@@ -40,6 +40,7 @@ my %dispatchTable = (
     readRow        => sub { return OLED::us2066::readRow(@_) },
     doubleLineText => sub { OLED::us2066::doubleLineText(@_) },
     displayOnOff   => sub { OLED::us2066::displayOnOff(@_) },
+    clearDisplay   => sub { OLED::us2066::clearDisplay() },
 );
 
 sub handleMessage {
@@ -68,7 +69,7 @@ sub _splitMessage {
         my @params = split(/\t/, $2);
         return ($subroutine, \@params);
     }
-    return (undef, undef);
+    return ('', '');
 }
 
 1;

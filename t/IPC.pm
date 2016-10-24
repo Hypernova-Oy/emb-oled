@@ -43,7 +43,7 @@ sub forkSub {
 sub forkOLEDServer {
     my ($configFile) = @_;
 
-    return forkExec("perl -Ilib scripts/oled -c $configFile");
+    return forkExec("perl -Ilib scripts/oled_server -c $configFile");
 }
 
 1;

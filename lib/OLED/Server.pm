@@ -3,7 +3,11 @@ package OLED::Server;
 use Modern::Perl;
 use Carp qw(cluck confess);
 
+
+use Sys::SigAction;
 use IO::Socket::UNIX;
+use OLED::us2066;
+
 use OLED::Server::Display;
 
 use base qw(OLED);
@@ -11,8 +15,9 @@ use base qw(OLED);
 sub new {
     my ($class, $params) = @_;
 
-    my $self = __PACKAGE__->_loadConfig($params->{configFile});
+    my $self = $class->_loadConfig($params->{configFile});
     $self = bless($self, $class);
+    $self->{verbose} = $params->{verbose} if $params->{verbose};
 
     $self->{socket} = IO::Socket::UNIX->new(
         Type => SOCK_STREAM(),
@@ -30,12 +35,27 @@ sub new {
 sub start {
     my ($self) = @_;
 
+    my $viewModified;
+
+    print "Server ready\n" if $self->{verbose};
     while (1) {
         my $buffer;
         eval {
-            print "Server ready\n" if $self->{verbose};
-            if (my $conn = $self->{socket}->accept()) {
+
+            my $conn;
+            my $skipLoop; #Prevent getting en Exiting eval via next -warning
+            if (Sys::SigAction::timeout_call(
+                $self->{ClearTimeout},
+                sub {$conn = $self->{socket}->accept()})
+            ) {
+                $self->_loopTimeout($viewModified);
+                $skipLoop = 1;
+            }
+            unless($skipLoop) {
                 print "Server accepted $conn\n" if $self->{verbose};
+
+                $viewModified = 1; #Toggle display clear
+
                 $conn->autoflush(1);
                 while($buffer = <$conn>) {
                     chomp($buffer);
@@ -54,8 +74,19 @@ sub start {
     }
 }
 
+sub _loopTimeout {
+    my ($self, $viewModified) = @_;
+
+    if ($viewModified) {
+        OLED::us2066::clearDisplay();
+        print "Display cleared\n" if $self->{verbose};
+    }
+}
+
 sub DESTROY {
     my ($self) = @_;
+
+    OLED::us2066::displayOnOff(0,0,0);
 
     if ($self->{socket}) {
         $self->{socket}->shutdown(2);

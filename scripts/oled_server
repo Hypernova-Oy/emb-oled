@@ -13,7 +13,7 @@ use OLED::Server;
 
 my $help;
 my $verbose = 0;
-my $confFile = "/etc/emb-oled/server.conf";
+my $confFile;
 
 
 GetOptions(
@@ -40,7 +40,7 @@ my $oled = OLED::Server->new({configFile => $confFile, verbose => $verbose});
 sub gracefullyTerminate {
   my ($signal) = @_;
   print "Exiting through signal '$signal'\n";
-#  $oled->DESTROY();
+  $oled->DESTROY();
   exit(0); #Interrupt the handler to trigger graceful termination, including calling DESTROY on objects.
 }
 $SIG{USR1} = sub {

@@ -13,7 +13,7 @@ use OLED::Client;
 
 my $help;
 my $verbose = 0;
-my $confFile = "/etc/emb-oled/server.conf";
+my $confFile;
 my ($printRow, $helloWorld);
 
 

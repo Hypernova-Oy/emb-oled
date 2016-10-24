@@ -21,6 +21,11 @@ sub oledServer {
     $reply = $oledClient->readRow(0);
     is($reply, "200 OK lol", "printRow op + readRow op");
 
+    sleep $oledClient->{ClearTimeout}+1; #Wait for the server to clear screen
+    $reply = $oledClient->readRow(0);
+    is($reply, "200 OK                     ", "Screen cleared after 'ClearTimeout'-delay");
+
+
     };
     if ($@) {
         ok(0, $@);
