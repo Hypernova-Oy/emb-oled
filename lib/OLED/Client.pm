@@ -99,6 +99,10 @@ sub displayOnOff {
     return $self->_send("displayOnOff($on\t$cursor\t$blink);");
 }
 
+sub clearDisplay {
+    my ($self, $index) = @_;
+    return $self->_send("clearDisplay();");
+}
 
 
 
