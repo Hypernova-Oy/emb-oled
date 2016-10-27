@@ -3,13 +3,25 @@ confDir=etc/$(programName)
 systemdServiceDir=etc/systemd/system
 systemPath=/usr/local/bin
 
+
+debianPackages=perl
+debianPackagedPerlModules=libsys-sigaction-perl libtest-simple-perl libtest-mockmodule-perl \
+                          libmodern-perl-perl libconfig-simple-perl
+
+
 #Macro to check the exit code of a make expression and possibly not fail on warnings
 RC      := test $$? -lt 100 
 
 
 build: compile
 
-install: build configure perlDeploy scriptsLink serviceEnable
+restart: serviceEnable
+
+install: installPackages build configure perlDeploy scriptsLink serviceEnable
+
+installPackages:
+	sudo apt-get install -y $(debianPackages)
+	sudo apt-get install -y $(debianPackagedPerlModules)
 
 perlDeploy:
 	./Build installdeps
