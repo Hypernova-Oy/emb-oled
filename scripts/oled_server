@@ -55,5 +55,9 @@ $SIG{INT} = sub {
 $SIG{TERM} = sub {
   gracefullyTerminate($_[0]);
 };
+$SIG{SIGV} = sub {
+  gracefullyTerminate($_[0]);
+};
 
 $oled->start();
+
