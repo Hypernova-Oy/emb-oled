@@ -38,6 +38,9 @@ sub start {
     my $viewModified;
 
     print "Server ready\n" if $self->{verbose};
+    $self->{display}->handleMessage("printRow(1\t OLED Server ready  );");
+    $viewModified = 1; #Trigger screen clearing after the status message
+
     while (1) {
         my $buffer;
         eval {
