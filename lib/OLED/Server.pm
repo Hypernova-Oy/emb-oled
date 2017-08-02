@@ -27,7 +27,13 @@ sub new {
     $self->socketConnectedSuccesfully();
     $self->{socket}->timeout( $self->getTimeout() );
 
-    $self->{display} = OLED::Server::Display->new({CSPin => $self->getSPICSGPIOPin(0)});
+    $self->{display} = OLED::Server::Display->new({
+                                           SCLK  => $self->SCLK,
+                                           SDIN  => $self->SDIN,
+                                           SDOUT => $self->SDOUT,
+                                           CS    => $self->CS,
+                                           RES   => $self->RES,
+    });
 
     return $self;
 }

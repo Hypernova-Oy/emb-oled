@@ -19,18 +19,23 @@ sub socketConnectedSuccesfully {
 
 =cut
 
+my $isDigit = qr/^\d+$/;
+
 sub _loadConfig {
     my ($class, $configFile) = @_;
     my $c = new Config::Simple($configFile || "/etc/emb-oled/server.conf")
 	|| exitWithError(Config::Simple->error());
     $c = $c->vars();
 
-    unless ($c->{SPICSGPIOPins}) {
-        confess("Configuration parameter 'SPICSGPIOPins' is undefined");
-    }
-    $c->{SPICSGPIOPins} = [split(/[ ,.]/, $c->{SPICSGPIOPins})];
-    unless (ref($c->{SPICSGPIOPins}) eq 'ARRAY' && scalar(@{$c->{SPICSGPIOPins}}) > 0) {
-        confess("Configuration parameter 'SPICSGPIOPins' is unknown. It must be a list of GPIO wiringPi pins connected as SPI CS-channels.");
+    foreach my $cp (qw(SPI_SerialClockSignal      SPI_SerialDataInputSignal
+                       SPI_SerialDataOutputSignal SPI_ChipSelectSignal
+                       SPI_ResetSignal)) {
+        unless ($c->{$cp}) {
+            confess("Configuration parameter '$cp' is not defined!");
+        }
+        unless ($c->{$cp} =~ $isDigit) {
+            confess("Configuration parameter '$cp' is not a digit!");
+        }
     }
 
     unless ($c->{SocketPath}) {
@@ -50,18 +55,11 @@ sub getSocketPath {
 sub getTimeout {
     return shift->{Timeout};
 }
-sub getSPICSGPIOPins {
-    return shift->{SPICSGPIOPins};
-}
 
-=head getSPICSGPIOPin
-
-@PARAM1, Integer, GPIO pin index
-
-=cut
-
-sub getSPICSGPIOPin {
-    return shift->{SPICSGPIOPins}->[shift];
-}
+sub SCLK { return shift->{SPI_SerialClockSignal} }
+sub SDIN { return shift->{SPI_SerialDataInputSignal} }
+sub SDOUT { return shift->{SPI_SerialDataOutputSignal} }
+sub CS   { return shift->{SPI_ChipSelectSignal} }
+sub RES  { return shift->{SPI_ResetSignal} }
 
 1;

@@ -6,6 +6,7 @@ use Test::More;
 
 use Time::HiRes;
 
+use OLED;
 use OLED::Server::Display;
 
 my @rows = (
@@ -26,7 +27,14 @@ sub oledDisplay {
     my ($display, $reply);
     eval {
 
-    $display = OLED::Server::Display->new({CSPin => 24});
+    my $c = OLED::_loadConfig('t/server.conf');
+    $display = OLED::Server::Display->new({
+                                           SCLK  => $c->{SPI_SerialClockSignal},
+                                           SDIN  => $c->{SPI_SerialDataInputSignal},
+                                           SDOUT => $c->{SPI_SerialDataOutputSignal},
+                                           CS    => $c->{SPI_ChipSelectSignal},
+                                           RES   => $c->{SPI_ResetSignal},
+    });
 
     $reply = $display->handleMessage("printRow(0\t$rows[0]);");
     is($reply, "200 OK", "Print row 1");

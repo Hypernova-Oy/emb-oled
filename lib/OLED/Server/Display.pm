@@ -3,6 +3,8 @@ package OLED::Server::Display;
 use Modern::Perl;
 use Carp qw(cluck confess);
 
+use Params::Validate;
+
 use OLED::us2066;
 
 =head1 OLED::Server::Display
@@ -11,22 +13,29 @@ Handles the socket API requests and operates the given OLED displays
 
 =cut
 
+my $isDigit = qr/^\d+$/;
+my %new_validator = (
+    SCLK  => {regex => $isDigit},
+    SDIN  => {regex => $isDigit},
+    SDOUT => {regex => $isDigit},
+    CS    => {regex => $isDigit},
+    RES   => {regex => $isDigit},
+);
 sub new {
-    my ($class, $params) = @_;
+    my $class = shift(@_);
+    my %p = Params::Validate::validate(@_, \%new_validator);
 
-    my $self = $class->_validateParams($params);
-    $self = bless($self, $class);
+    my $self = bless(\%p, $class);
 
+    OLED::us2066::setSpiPinSCLK(  $p{SCLK}  );
+    OLED::us2066::setSpiPinSDIN(  $p{SDIN}  );
+    OLED::us2066::setSpiPinSDOUT( $p{SDOUT} );
+    OLED::us2066::setSpiPinCS(    $p{CS}    );
+    OLED::us2066::setSpiPinRES(   $p{RES}   );
     OLED::us2066::init();
     OLED::us2066::displayOnOff(1,0,0);
 
     return $self;
-}
-
-sub _validateParams {
-    my ($class, $params) = @_;
-
-    return $params;
 }
 
 =head2 handleMessage
