@@ -30,7 +30,7 @@ sub _loadConfig {
     foreach my $cp (qw(SPI_SerialClockSignal      SPI_SerialDataInputSignal
                        SPI_SerialDataOutputSignal SPI_ChipSelectSignal
                        SPI_ResetSignal)) {
-        unless ($c->{$cp}) {
+        unless (defined($c->{$cp})) {
             confess("Configuration parameter '$cp' is not defined!");
         }
         unless ($c->{$cp} =~ $isDigit) {
