@@ -27,7 +27,7 @@ sub oledDisplay {
     my ($display, $reply);
     eval {
 
-    my $c = OLED::_loadConfig('t/server.conf');
+    my $c = OLED->_loadConfig('t/server.conf');
     $display = OLED::Server::Display->new({
                                            SCLK  => $c->{SPI_SerialClockSignal},
                                            SDIN  => $c->{SPI_SerialDataInputSignal},
