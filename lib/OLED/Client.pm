@@ -10,7 +10,7 @@ use base qw(OLED);
 sub new {
     my ($class, $params) = @_;
 
-    my $self = $class->_loadConfig($params->{configFile});
+    my $self = $class->_loadConfig($params);
     $self = bless($self, $class);
 
     return $self;

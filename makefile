@@ -1,5 +1,6 @@
 programName=emb-oled
 confDir=etc/$(programName)
+runDir=var/run/$(programName)
 systemdServiceDir=etc/systemd/system
 systemPath=/usr/local/bin
 
@@ -37,11 +38,13 @@ test:
 
 configure:
 	mkdir -p /$(confDir)
+	mkdir -p /$(runDir)
 	cp $(confDir)/server.conf /$(confDir)/server.conf
 	cp $(systemdServiceDir)/$(programName).service /$(systemdServiceDir)/$(programName).service
 
 unconfigure:
 	rm -r /$(confDir) || $(RC)
+	rm -r /$(runDir) || $(RC)
 
 serviceEnable:
 	systemctl daemon-reload

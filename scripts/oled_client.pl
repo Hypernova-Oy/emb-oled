@@ -31,7 +31,7 @@ An OLED display server cli client
 
  -c        Config file. Defaults to /etc/emb-oled/server.conf
 
- -h        Hello world check to the server
+ -H        Hello world check to the server
 
  -p        print a row to the OLED display
 

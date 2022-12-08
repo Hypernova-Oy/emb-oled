@@ -4,8 +4,12 @@ Description=OLED display daemon
 [Service]
 Type=idle
 User=root
-WorkingDirectory=/home/toveri/emb-oled
+
+ExecStartPre=/bin/mkdir -p /var/run/emb-oled
 ExecStart=/usr/local/bin/oled_server
+
+WorkingDirectory=/home/toveri/emb-oled
+PIDFile=/var/run/emb-oled/pid
 
 RestartSec=5s
 Restart=always

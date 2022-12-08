@@ -3,8 +3,6 @@ package OLED::Server::Display;
 use Modern::Perl;
 use Carp qw(cluck confess);
 
-use Params::Validate;
-
 use OLED::us2066;
 
 =head1 OLED::Server::Display
@@ -13,25 +11,18 @@ Handles the socket API requests and operates the given OLED displays
 
 =cut
 
-my $isDigit = qr/^\d+$/;
-my %new_validator = (
-    SCLK  => {regex => $isDigit},
-    SDIN  => {regex => $isDigit},
-    SDOUT => {regex => $isDigit},
-    CS    => {regex => $isDigit},
-    RES   => {regex => $isDigit},
-);
 sub new {
-    my $class = shift(@_);
-    my %p = Params::Validate::validate(@_, \%new_validator);
+    my ($class, $p) = @_;
 
-    my $self = bless(\%p, $class);
+    my $self = bless({}, $class);
 
-    OLED::us2066::setSpiPinSCLK(  $p{SCLK}  );
-    OLED::us2066::setSpiPinSDIN(  $p{SDIN}  );
-    OLED::us2066::setSpiPinSDOUT( $p{SDOUT} );
-    OLED::us2066::setSpiPinCS(    $p{CS}    );
-    OLED::us2066::setSpiPinRES(   $p{RES}   );
+    OLED::us2066::setSpiPinSCLK(     $p->{SPI_SerialClockSignal}      );
+    OLED::us2066::setSpiPinSDIN(     $p->{SPI_SerialDataInputSignal}  );
+    OLED::us2066::setSpiPinSDOUT(    $p->{SPI_SerialDataOutputSignal} );
+    OLED::us2066::setSpiPinCS(       $p->{SPI_ChipSelectSignal}       );
+    OLED::us2066::setSpiPinRES(      $p->{SPI_ResetSignal}            );
+    OLED::us2066::setSpiReceiveDelay($p->{SPI_ReceiveDelayMs}         );
+    OLED::us2066::setSpiSendDelay(   $p->{SPI_SendDelayMs}            );
     OLED::us2066::init();
     OLED::us2066::displayOnOff(1,0,0);
 
@@ -79,6 +70,12 @@ sub _splitMessage {
         return ($subroutine, \@params);
     }
     return ('', '');
+}
+
+sub DESTROY {
+    my ($self) = @_;
+ 
+    OLED::us2066::displayOnOff(0,0,0);
 }
 
 1;

@@ -3,105 +3,70 @@ package OLED::Server;
 use Modern::Perl;
 use Carp qw(cluck confess);
 
+use base qw(Net::Server::Single OLED);
 
+use Time::HiRes qw(ITIMER_VIRTUAL ITIMER_REAL ITIMER_PROF);
 use Sys::SigAction;
-use IO::Socket::UNIX;
 use OLED::us2066;
 
 use OLED::Server::Display;
 
-use base qw(OLED);
+my $display;
+my $config;
 
-sub new {
-    my ($class, $params) = @_;
+sub process_request {
+  my $self = shift;
 
-    my $self = $class->_loadConfig($params->{configFile});
-    $self = bless($self, $class);
-    $self->{verbose} = $params->{verbose} if $params->{verbose};
+  Time::HiRes::setitimer(ITIMER_REAL, 0); #reset ClearTimeout
 
-    $self->{socket} = IO::Socket::UNIX->new(
-        Type => SOCK_STREAM(),
-        Local => $self->getSocketPath(),
-        Listen => 1,
-    );
-    $self->socketConnectedSuccesfully();
-    $self->{socket}->timeout( $self->getTimeout() );
-
-    $self->{display} = OLED::Server::Display->new({
-                                           SCLK  => $self->SCLK,
-                                           SDIN  => $self->SDIN,
-                                           SDOUT => $self->SDOUT,
-                                           CS    => $self->CS,
-                                           RES   => $self->RES,
-    });
-
-    return $self;
+  while (<STDIN>) {
+    s/\r?\n$//;
+    eval {
+      if (Sys::SigAction::timeout_call(
+        $config->{ServerTimeout},
+        sub {
+          my $reply = $self->_handler($_);
+          print STDOUT $reply."\n";
+        })
+      ) {
+        # On timeout
+        print STDOUT "Timed out in '".$config->{ServerTimeout}."'!\n";
+      }
+    };
+    if ($@) {
+      print STDOUT ($@);
+    }
+  }
+  Time::HiRes::setitimer(ITIMER_REAL, $config->getClearTimeout());
 }
 
-sub start {
-    my ($self) = @_;
-
-    my $viewModified;
-
-    print "Server ready\n" if $self->{verbose};
-    $self->{display}->handleMessage("printRow(1\t OLED Server ready  );");
-    $viewModified = 1; #Trigger screen clearing after the status message
-
-    while (1) {
-        my $buffer;
-        eval {
-
-            my $conn;
-            my $skipLoop; #Prevent getting en Exiting eval via next -warning
-            if (Sys::SigAction::timeout_call(
-                $self->{ClearTimeout},
-                sub {$conn = $self->{socket}->accept()})
-            ) {
-                $self->_loopTimeout($viewModified);
-                $skipLoop = 1;
-            }
-            unless($skipLoop) {
-                print "Server accepted $conn\n" if $self->{verbose};
-
-                $viewModified = 1; #Toggle display clear
-
-                $conn->autoflush(1);
-                while($buffer = <$conn>) {
-                    chomp($buffer);
-                    print "Server got: $buffer\n" if $self->{verbose};
-                    my $reply = $self->{display}->handleMessage($buffer);
-                    print "Server send: $reply\n" if $self->{verbose};
-                    $conn->send($reply."\n"); #Make sure there is a newline at the end of the message so the connection wont hang while waiting for the terminator character
-                }
-                print "Server closes $conn\n" if $self->{verbose};
-                $conn->close();
-            }
-        };
-        if ($@) {
-            cluck($@);
-        }
-    }
+sub _handler {
+  my ($self, $payload) = @_;
+  print STDERR "Server got: $payload\n" if $config->{Verbose};
+  my $reply = $display->handleMessage($payload);
+  print STDERR "Server send: $reply\n" if $config->{Verbose};
+  return $reply;
 }
 
-sub _loopTimeout {
-    my ($self, $viewModified) = @_;
-
-    if ($viewModified) {
-        OLED::us2066::clearDisplay();
-        print "Display cleared\n" if $self->{verbose};
-    }
+sub _clearDisplay {
+  OLED::us2066::clearDisplay();
+  print STDERR "Display cleared\n" if $config->{Verbose};
 }
 
-sub DESTROY {
-    my ($self) = @_;
+sub start_daemon {
+  my ($params) = @_;
+  $config = __PACKAGE__->_loadConfig($params);
+  $display = OLED::Server::Display->new($config);
 
-    OLED::us2066::displayOnOff(0,0,0);
+  $SIG{ALRM} = sub { _clearDisplay() };
 
-    if ($self->{socket}) {
-        $self->{socket}->shutdown(2);
-        $self->{socket}->close();
-        unlink $self->getSocketPath(); #For some reason the socket is not automatically removed
-    }
+  my $server = OLED::Server->new(
+    pid_file => $config->getPidPath,
+    port => $config->getSocketPath . '|unix',
+    user => $config->{User},
+    group => $config->{Group},
+  );
+  $server->run();
 }
 
 1;

@@ -11,53 +11,28 @@ use Data::Dumper;
 
 use OLED::Server;
 
-my $help;
-my $verbose = 0;
-my $confFile;
-
+my %params = ();
 
 GetOptions(
-    'h|help'                      => \$help,
-    'v|verbose:i'                 => \$verbose,
-    'c:s'                         => \$confFile,
+    'h|help'                      => \$params{help},
+    'v|verbose:i'                 => \$params{Verbose},
+    'c:s'                         => \$params{configFile},
 );
 
 my $usage = <<USAGE;
 
 An OLED display server managing OLED displays over SPI
 
+  -h --help
+  -v --verbose
+  -c             config file
+
 USAGE
 
-if ($help) {
+if ($params{help}) {
   print $usage;
   exit 0;
 }
 
 
-my $oled = OLED::Server->new({configFile => $confFile, verbose => $verbose});
-
-##Introduce signal handlers
-sub gracefullyTerminate {
-  my ($signal) = @_;
-  print "Exiting through signal '$signal'\n";
-  $oled->DESTROY();
-  exit(0); #Interrupt the handler to trigger graceful termination, including calling DESTROY on objects.
-}
-$SIG{USR1} = sub {
-  print Data::Dumper::Dumper($oled);
-};
-$SIG{HUP} = sub {
-  gracefullyTerminate($_[0]);
-};
-$SIG{INT} = sub {
-  gracefullyTerminate($_[0]);
-};
-$SIG{TERM} = sub {
-  gracefullyTerminate($_[0]);
-};
-$SIG{SEGV} = sub {
-  gracefullyTerminate($_[0]);
-};
-
-$oled->start();
-
+my $oled = OLED::Server::start_daemon(\%params);

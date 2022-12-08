@@ -8,13 +8,12 @@ my $build = Module::Build->new
      dist_abstract => 'Client-server for managing NHD US2066 microchip-drive OLED displays',
 
      build_requires => {
-	    'Modern::Perl' => '1',
+        'Modern::Perl' => '1',
      },
 
      requires => {
         'Time::HiRes' => '1.9740',
         'Config::Simple' => '4.58',
-        'IO::Socket::UNIX' => '1.25',
         'Sys::SigAction' => '0.23',
      },
 

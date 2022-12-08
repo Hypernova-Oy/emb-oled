@@ -22,14 +22,19 @@ sub socketConnectedSuccesfully {
 my $isDigit = qr/^\d+$/;
 
 sub _loadConfig {
-    my ($class, $configFile) = @_;
-    my $c = new Config::Simple($configFile || "/etc/emb-oled/server.conf")
-	|| exitWithError(Config::Simple->error());
+    my ($class, $params) = @_;
+    my $c = new Config::Simple($params->{configFile} || "/etc/emb-oled/server.conf")
+	|| die(Config::Simple->error());
     $c = $c->vars();
+    while (my ($k, $v) = each(%$params)) {
+      $c->{$k} = $v if defined $params->{$k}; #This way undef $params dont clobber defined config.
+    }
 
     foreach my $cp (qw(SPI_SerialClockSignal      SPI_SerialDataInputSignal
                        SPI_SerialDataOutputSignal SPI_ChipSelectSignal
-                       SPI_ResetSignal)) {
+                       SPI_ResetSignal            SPI_SendDelayMs
+                       SPI_ReceiveDelayMs
+                       ClearTimeout               ServerTimeout)) {
         unless (defined($c->{$cp})) {
             confess("Configuration parameter '$cp' is not defined!");
         }
@@ -38,28 +43,39 @@ sub _loadConfig {
         }
     }
 
-    unless ($c->{SocketPath}) {
-        confess("Configuration parameter 'SocketPath' is undefined.");
+    unless ($c->{User}) {
+        confess("Configuration parameter 'User' is undefined.");
+    }
+    unless ($c->{Group}) {
+        confess("Configuration parameter 'Group' is undefined.");
+    }
+    unless ($c->{RunDir}) {
+        confess("Configuration parameter 'RunDir' is undefined.");
     }
 
-    unless ($c->{ClearTimeout}) {
-        confess("Configuration parameter 'ClearTimeout' is undefined.");
-    }
-
-    return $c;
+    return bless($c, $class);
 }
 
+sub getRunDir {
+    return shift->{RunDir};
+}
 sub getSocketPath {
-    return shift->{SocketPath};
+    return shift->{RunDir}.'/sock';
 }
-sub getTimeout {
-    return shift->{Timeout};
+sub getPidPath {
+    return shift->{RunDir}.'/pid';
 }
-
-sub SCLK { return shift->{SPI_SerialClockSignal} }
-sub SDIN { return shift->{SPI_SerialDataInputSignal} }
-sub SDOUT { return shift->{SPI_SerialDataOutputSignal} }
-sub CS   { return shift->{SPI_ChipSelectSignal} }
-sub RES  { return shift->{SPI_ResetSignal} }
+sub getClearTimeout {
+    return shift->{ClearTimeout};
+}
+sub getServerTimeout {
+    return shift->{ServerTimeout};
+}
+sub SPI_SendDelayMs {
+    return shift->{SPI_SendDelayMs};
+}
+sub SPI_ReceiveDelayMs {
+    return shift->{SPI_ReceiveDelayMs};
+}
 
 1;
