@@ -11,7 +11,8 @@ ExecStart=/usr/local/bin/oled_server
 WorkingDirectory=/home/toveri/emb-oled
 PIDFile=/var/run/emb-oled/pid
 
-RestartSec=5s
+#Monitoring agents can better detect the failed states, when they typically poll every minute.
+RestartSec=60s
 Restart=always
 
 PrivateTmp=yes
