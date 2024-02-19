@@ -37,10 +37,14 @@ sub new {
 
 my %dispatchTable = (
     printRow       => sub { OLED::us2066::printRow(@_) },
-    readRow        => sub { return OLED::us2066::readRow(@_) },
+    readRow        => sub { my $buffer = "                    ";
+                            OLED::us2066::readRow($_[0], $buffer);
+                            return $buffer;
+                      },
     doubleLineText => sub { OLED::us2066::doubleLineText(@_) },
     displayOnOff   => sub { OLED::us2066::displayOnOff(@_) },
     clearDisplay   => sub { OLED::us2066::clearDisplay() },
+    reset          => sub { OLED::us2066::init() }, # init internally flips the RESet-pin.
 );
 
 sub handleMessage {

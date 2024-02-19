@@ -104,6 +104,10 @@ sub clearDisplay {
     return $self->_send("clearDisplay();");
 }
 
+sub reset {
+    my ($self) = @_;
+    return $self->_send("reset();");
+}
 
 
 
