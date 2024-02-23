@@ -39,7 +39,8 @@ test:
 configure:
 	mkdir -p /$(confDir)
 	mkdir -p /$(runDir)
-	cp $(confDir)/server.conf /$(confDir)/server.conf
+	cp --backup=numbered $(confDir)/server.conf /$(confDir)/server.conf
+	cp --backup=numbered $(confDir)/log4perl.conf /$(confDir)/log4perl.conf
 	cp $(systemdServiceDir)/$(programName).service /$(systemdServiceDir)/$(programName).service
 
 unconfigure:

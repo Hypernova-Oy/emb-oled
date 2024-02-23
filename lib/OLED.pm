@@ -5,6 +5,8 @@ use Carp qw(confess);
 
 use Config::Simple;
 
+our $config;
+
 sub socketConnectedSuccesfully {
     my ($self) = @_;
 
@@ -15,6 +17,14 @@ sub socketConnectedSuccesfully {
     return $self;
 }
 
+sub config {
+    return $config if $config;
+    return _loadConfig(@_);
+}
+sub setConfig {
+    return _loadConfig(@_);
+}
+
 =head2 _loadConfig
 
 =cut
@@ -23,37 +33,43 @@ my $isDigit = qr/^\d+$/;
 
 sub _loadConfig {
     my ($class, $params) = @_;
-    my $c = new Config::Simple($params->{configFile} || "/etc/emb-oled/server.conf")
+    $config = new Config::Simple($params->{configFile} || "/etc/emb-oled/server.conf")
 	|| die(Config::Simple->error());
-    $c = $c->vars();
+    $config = $config->vars();
     while (my ($k, $v) = each(%$params)) {
-      $c->{$k} = $v if defined $params->{$k}; #This way undef $params dont clobber defined config.
+      $config->{$k} = $v if defined $params->{$k}; #This way undef $params dont clobber defined config.
     }
 
     foreach my $cp (qw(SPI_SerialClockSignal      SPI_SerialDataInputSignal
                        SPI_SerialDataOutputSignal SPI_ChipSelectSignal
                        SPI_ResetSignal            SPI_SendDelayMs
                        SPI_ReceiveDelayMs
-                       ClearTimeout               ServerTimeout)) {
-        unless (defined($c->{$cp})) {
+                    )) {
+        unless (defined($config->{$cp})) {
             confess("Configuration parameter '$cp' is not defined!");
         }
-        unless ($c->{$cp} =~ $isDigit) {
+        unless ($config->{$cp} =~ $isDigit) {
             confess("Configuration parameter '$cp' is not a digit!");
         }
     }
 
-    unless ($c->{User}) {
+    unless ($config->{User}) {
         confess("Configuration parameter 'User' is undefined.");
     }
-    unless ($c->{Group}) {
+    unless ($config->{Group}) {
         confess("Configuration parameter 'Group' is undefined.");
     }
-    unless ($c->{RunDir}) {
+    unless ($config->{RunDir}) {
         confess("Configuration parameter 'RunDir' is undefined.");
     }
+    if ($config->{Heartbeat_DisplayStyle} =~ /^([DF])/i) {
+        $config->{Heartbeat_DisplayStyle} = ucfirst($1);
+    }
+    else {
+        warn("configuration parameter 'Heartbeat_DisplayStyle'='".$config->{Heartbeat_DisplayStyle}."' doesnt match regexp /^[DF]/");
+    }
 
-    return bless($c, $class);
+    return bless($config, $class);
 }
 
 sub getRunDir {
@@ -65,11 +81,26 @@ sub getSocketPath {
 sub getPidPath {
     return shift->{RunDir}.'/pid';
 }
-sub getClearTimeout {
-    return shift->{ClearTimeout};
+sub ClearTimeout {
+    return shift->{ClearTimeout} // 4;
 }
 sub getServerTimeout {
-    return shift->{ServerTimeout};
+    return shift->{ServerTimeout} // 5;
+}
+sub Heartbeat_IdleBeforeHeartbeating {
+    return shift->{Heartbeat_IdleBeforeHeartbeating} // 60;
+}
+sub Heartbeat_LevenshteinDistanceTolerance {
+    return shift->{Heartbeat_LevenshteinDistanceTolerance} // 3;
+}
+sub Heartbeat_ScrollSpeedForNewLine {
+    return shift->{Heartbeat_ScrollSpeedForNewLine} // 10;
+}
+sub Heartbeat_ReResetDelay {
+    return shift->{Heartbeat_ReResetDelay} // 3600;
+}
+sub Heartbeat_DisplayStyle {
+    return shift->{Heartbeat_DisplayStyle} || 'D'
 }
 sub SPI_SendDelayMs {
     return shift->{SPI_SendDelayMs};

@@ -3,6 +3,7 @@
 use Modern::Perl;
 
 use Test::More;
+use Time::HiRes;
 
 use OLED::Client;
 
@@ -13,7 +14,7 @@ sub oledServer {
     my ($oledClient, $oledPid, $reply);
     eval {
 
-    $oledPid = t::IPC::forkOLEDServer('t/server.conf');
+    $oledPid = threads->create(\&OLED::Server::start_daemon, {configFile => 't/server.conf'}); sleep 1;
 
     $oledClient = OLED::Client->new({configFile => 't/server.conf'});
 
@@ -22,7 +23,7 @@ sub oledServer {
     is($reply, "200 OK lol", "printRow op + readRow op");
 
     $oledClient->endTransaction(); #Tell the server it can start clearing the screen.
-    sleep $oledClient->{ClearTimeout}+1; #Wait for the server to clear screen after a time of inactivity
+    Time::HiRes::sleep $oledClient->{ClearTimeout}+0.1; #Wait for the server to clear screen after a time of inactivity
     $reply = $oledClient->readRow(0);
     is($reply, "200 OK                     ", "Screen cleared after 'ClearTimeout'-delay");
 

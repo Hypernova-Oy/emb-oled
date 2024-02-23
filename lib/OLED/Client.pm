@@ -1,7 +1,6 @@
 package OLED::Client;
 
 use Modern::Perl;
-use Carp qw(confess);
 
 use IO::Socket::UNIX;
 

@@ -14,7 +14,7 @@ use OLED::Client;
 my $help;
 my $verbose = 0;
 my $confFile;
-my ($printRow, $readRow, $reset, $helloWorld);
+my ($poem, $printRow, $readRow, $reset, $helloWorld);
 
 
 GetOptions(
@@ -24,6 +24,7 @@ GetOptions(
     'p:s'                         => \$printRow,
     'r:i'                         => \$readRow,
     'R'                           => \$reset,
+    'poem:s'                      => \$poem,
     'H'                           => \$helloWorld,
 );
 
@@ -40,6 +41,8 @@ An OLED display server cli client
  -r        Number, Index of the row from 0-3. Read a row from the display.
 
  -R        Flag, reset the display
+
+ --poem    Show a poem. 'r' or 'random' for a random poem, or a named poem.
 
 EXAMPLES
 
@@ -69,4 +72,21 @@ if ($readRow) {
 }
 if ($reset) {
   print $client->reset();
+}
+if ($poem) {
+  require OLED::PoemPlayer;
+  @OLED::PoemPlayer::poemBuffer = ();
+  if ($poem eq 'r' || $poem eq 'random') {
+    OLED::PoemPlayer::selectRandomPoem();
+  }
+  else {
+    OLED::PoemPlayer::selectPoem($poem);
+  }
+  OLED::PoemPlayer::feedLinesToDisplay();
+  print join("\n", @OLED::PoemPlayer::poemBuffer)."\n";
+  for my $lineRows (@OLED::PoemPlayer::poemBuffer) {
+    for my $row (@$lineRows) {
+      print "$row\n";
+    }
+  }
 }

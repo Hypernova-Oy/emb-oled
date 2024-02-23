@@ -12,6 +12,8 @@ my $build = Module::Build->new
      },
 
      requires => {
+        'Text::Levenshtein::XS' => '0.503',
+        'Text::Unidecode' => '1.30',
         'Time::HiRes' => '1.9740',
         'Config::Simple' => '4.58',
         'Sys::SigAction' => '0.23',
