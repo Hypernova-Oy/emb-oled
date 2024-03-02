@@ -79,8 +79,6 @@ sub selectRandomPoem {
 
 sub _parsePoem {
   my ($poemObj) = @_;
-  $poemObj->{title} = Text::Unidecode::unidecode($poemObj->{title});
-  $poemObj->{content} = Text::Unidecode::unidecode($poemObj->{content});
   my @stanzas = split("\n\n", $poemObj->{content});
   for (my $i=0 ; $i<@stanzas ; $i++) {
     my @p = split("\n", $stanzas[$i]);

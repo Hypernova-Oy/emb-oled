@@ -1,5 +1,6 @@
 use Modern::Perl;
 use utf8;
+use open ':std', ':encoding(utf8)';
 use Test::More;
 
 use OLED;
@@ -23,14 +24,14 @@ sub parsePoemDiscreet {
   subtest "Aholla itkijä", sub {
     OLED::PoemPlayer::selectPoem("Aholla itkijä");
 
-    $lines = OLED::PoemPlayer::feedRowsToDisplay(); # Poems start with 3 empty rows, just like the Star Wars intro
-    is_deeply($lines, ['Aholla itkija|      ']);
     $lines = OLED::PoemPlayer::feedRowsToDisplay();
-    is_deeply($lines, [undef, '  Immikko aholla    ','itki,               ']);
+    is_deeply($lines, ['Aholla itkijä|      ']);
     $lines = OLED::PoemPlayer::feedRowsToDisplay();
-    is_deeply($lines, [undef, undef, 'Heinatiella         ','hellehteli,         ']);
+    is_deeply($lines, [undef, '  Immikkö aholla    ','itki,               ']);
     $lines = OLED::PoemPlayer::feedRowsToDisplay();
-    is_deeply($lines, ['Kirjavaisella       ','kivella,            ']);
+    is_deeply($lines, [undef, undef, 'Heinätiellä         ','hellehteli,         ']);
+    $lines = OLED::PoemPlayer::feedRowsToDisplay();
+    is_deeply($lines, ['Kirjavaisella       ','kivellä,            ']);
     $lines = OLED::PoemPlayer::feedRowsToDisplay();
     is_deeply($lines, [undef, 'Paistavalla         ','paaterella.         ']);
 
@@ -55,26 +56,26 @@ sub parsePoemFullview {
     OLED::PoemPlayer::selectPoem("Aholla itkijä");
 
     $lines = OLED::PoemPlayer::feedRowsToDisplay(); # Poems start with 3 empty rows, just like the Star Wars intro
-    is_deeply($lines, ['                    ','                    ','                    ','Aholla itkija|      ']);
+    is_deeply($lines, ['                    ','                    ','                    ','Aholla itkijä|      ']);
     $lines = OLED::PoemPlayer::feedRowsToDisplay();
     $lines = OLED::PoemPlayer::feedRowsToDisplay();
 
     $lines = OLED::PoemPlayer::feedRowsToDisplay();
-    is_deeply($lines, ['Aholla itkija|      ','--------------------','                    ','  Immikko aholla    ']);
+    is_deeply($lines, ['Aholla itkijä|      ','--------------------','                    ','  Immikkö aholla    ']);
     $lines = OLED::PoemPlayer::feedRowsToDisplay();
-    is_deeply($lines, ['--------------------','                    ','  Immikko aholla    ','itki,               ']);
+    is_deeply($lines, ['--------------------','                    ','  Immikkö aholla    ','itki,               ']);
     $lines = OLED::PoemPlayer::feedRowsToDisplay();
-    is_deeply($lines, ['                    ','  Immikko aholla    ','itki,               ','Heinatiella         ']);
+    is_deeply($lines, ['                    ','  Immikkö aholla    ','itki,               ','Heinätiellä         ']);
 
     while (scalar(@$lines) == 4) {
       $lines = OLED::PoemPlayer::feedRowsToDisplay();
     }
 
-    is_deeply($lines, ['majana,             ','Musta multa         ','kattehena."         ']);
+    is_deeply($lines, ['majana,             ','Musta multa         ','kattehena.”         ']);
     $lines = OLED::PoemPlayer::feedRowsToDisplay();
-    is_deeply($lines, ['Musta multa         ','kattehena."         ']);
+    is_deeply($lines, ['Musta multa         ','kattehena.”         ']);
     $lines = OLED::PoemPlayer::feedRowsToDisplay();
-    is_deeply($lines, ['kattehena."         ']);
+    is_deeply($lines, ['kattehena.”         ']);
     $lines = OLED::PoemPlayer::feedRowsToDisplay();
     is_deeply($lines, []);
   };
@@ -83,12 +84,12 @@ sub parsePoemFullview {
     OLED::PoemPlayer::selectPoem("Äiä on ääntäni kulunut");
 
     $lines = OLED::PoemPlayer::feedRowsToDisplay(); # Poems start with 3 empty rows, just like the Star Wars intro
-    is_deeply($lines, ['                    ','                    ','                    ','Aia on aantani      ']);
+    is_deeply($lines, ['                    ','                    ','                    ','Äiä on ääntäni      ']);
     $lines = OLED::PoemPlayer::feedRowsToDisplay();
     $lines = OLED::PoemPlayer::feedRowsToDisplay();
 
     $lines = OLED::PoemPlayer::feedRowsToDisplay();
-    is_deeply($lines, ['Aia on aantani      ','kulunut|            ','--------------------','                    ']);
+    is_deeply($lines, ['Äiä on ääntäni      ','kulunut|            ','--------------------','                    ']);
     $lines = OLED::PoemPlayer::feedRowsToDisplay();
     is_deeply($lines, ['kulunut|            ','--------------------','                    ','  Lauloin ennen     ']);
     $lines = OLED::PoemPlayer::feedRowsToDisplay();
@@ -98,7 +99,7 @@ sub parsePoemFullview {
       $lines = OLED::PoemPlayer::feedRowsToDisplay();
     }
 
-    is_deeply($lines, ['kivilla,            ','Reki rannan         ','hiekkasilla.        ']);
+    is_deeply($lines, ['kivillä,            ','Reki rannan         ','hiekkasilla.        ']);
     $lines = OLED::PoemPlayer::feedRowsToDisplay();
     is_deeply($lines, ['Reki rannan         ','hiekkasilla.        ']);
     $lines = OLED::PoemPlayer::feedRowsToDisplay();

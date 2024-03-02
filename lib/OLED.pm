@@ -68,6 +68,12 @@ sub _loadConfig {
     else {
         warn("configuration parameter 'Heartbeat_DisplayStyle'='".$config->{Heartbeat_DisplayStyle}."' doesnt match regexp /^[DF]/");
     }
+    if ($config->{CharacterEncodingScheme} =~ /^([UN])/i) {
+        $config->{CharacterEncodingScheme} = ucfirst($1);
+    }
+    else {
+        warn("configuration parameter 'CharacterEncodingScheme'='".$config->{CharacterEncodingScheme}."' doesnt match regexp /^[UN]/");
+    }
 
     return bless($config, $class);
 }
@@ -80,6 +86,9 @@ sub getSocketPath {
 }
 sub getPidPath {
     return shift->{RunDir}.'/pid';
+}
+sub CharacterEncodingScheme {
+    return shift->{CharacterEncodingScheme} // 'N';
 }
 sub ClearTimeout {
     return shift->{ClearTimeout} // 4;

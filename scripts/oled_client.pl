@@ -3,6 +3,8 @@
 # Copyright 2016 Koha-Suomi
 #
 
+use utf8;
+use open ':std', ':encoding(utf8)';
 use Modern::Perl;
 use Carp;
 use Getopt::Long qw(:config no_ignore_case);
@@ -82,11 +84,17 @@ if ($poem) {
   else {
     OLED::PoemPlayer::selectPoem($poem);
   }
-  OLED::PoemPlayer::feedLinesToDisplay();
-  print join("\n", @OLED::PoemPlayer::poemBuffer)."\n";
-  for my $lineRows (@OLED::PoemPlayer::poemBuffer) {
-    for my $row (@$lineRows) {
-      print "$row\n";
+  OLED::PoemPlayer::feedRowsToDisplay();
+  if (ref($OLED::PoemPlayer::poemBuffer[0]) eq 'ARRAY') {
+    for my $lineRows (@OLED::PoemPlayer::poemBuffer) {
+      for my $row (@$lineRows) {
+        print "$row";
+        print ord($_).' ' for split(//, $row);
+        print "\n";
+      }
     }
+  }
+  else {
+    print join("\n", @OLED::PoemPlayer::poemBuffer)."\n";
   }
 }

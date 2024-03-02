@@ -5,10 +5,12 @@ use threads;
 use threads::shared;
 
 use Text::Levenshtein::XS;
+use Text::Unidecode;
 use Time::HiRes;
 
 use OLED;
 use OLED::us2066;
+use OLED::us2066::ROM_A;
 
 use OLog;
 my $l = bless({}, 'OLog');
@@ -32,6 +34,14 @@ our %statistics :shared = (
     invalidPrintRow => 0,
 );
 our $latestPrintRow :shared = "                    "; # Testing uses this to introspect correct behaviour during daemon runtime
+
+sub statisticsToString {
+    my $statistics = "Statistics:\n";
+    while (my ($k, $v) = each(%statistics)) {
+        $statistics .= "$k=$v\n";
+    }
+    return $statistics;
+}
 
 sub new {
     my ($class, $p) = @_;
@@ -58,7 +68,7 @@ sub new {
 =cut
 
 our %dispatchTable = (
-    printRow       => sub { $latestPrintRow = $_[1]; OLED::us2066::printRow(@_); },
+    printRow       => sub { $latestPrintRow = $_[1]; OLED::us2066::printRow($_[0], EncodePerlStringForDisplay($_[1])); },
     readRow        => sub { my $buffer = "                    ";
                             OLED::us2066::readRow($_[0], $buffer);
                             return $buffer;
@@ -107,6 +117,20 @@ sub _splitMessage {
     }
 }
 
+sub EncodePerlStringForDisplay {
+    my ($perlString) = @_;
+
+    if (OLED->config->CharacterEncodingScheme eq 'N') {
+        return OLED::us2066::ROM_A::translatePerlString($perlString);
+    }
+    elsif (OLED->config->CharacterEncodingScheme eq 'U') {
+        return Text::Unidecode::unidecode($perlString);
+    }
+    else {
+        $l->logdie("Unknown CharacterEncodingScheme='".OLED->config->CharacterEncodingScheme."'!");
+    }
+}
+
 sub _dispatchCall {
     my ($self, $subroutineName, $params) = @_;
     lock($handlingMessage);
@@ -128,7 +152,7 @@ sub validateDisplayContent {
 
     my $readLine = $self->_dispatchCall('readRow', [$lineNumber]);
 
-    my $levenshtein = Text::Levenshtein::XS::distance($writtenLine, $readLine);
+    my $levenshtein = Text::Levenshtein::XS::distance(EncodePerlStringForDisplay($writtenLine), $readLine);
     if ($levenshtein > $OLED::config->Heartbeat_LevenshteinDistanceTolerance()) {
         $statistics{invalidPrintRow}++;
         $l->error("Display write-read cycle failed: Written='$writtenLine', Read='$readLine', Levenshtein='$levenshtein', Invalid='".$statistics{invalidPrintRow}."/".$statistics{validPrintRow}."'. Reseting display.");
@@ -141,14 +165,8 @@ sub validateDisplayContent {
 
 sub DESTROY {
     my ($self) = @_;
- 
-    OLED::us2066::displayOnOff(0,0,0);
 
-    my $statistics = "Statistics:\n";
-    while (my ($k, $v) = each(%statistics)) {
-        $statistics .= "$k.=.$v\n";
-    }
-    $l->info($statistics);
+    OLED::us2066::displayOnOff(0,0,0);
 }
 
 1;

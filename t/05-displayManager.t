@@ -11,6 +11,8 @@ use OLED::Client;
 use OLED::Server;
 use OLED::Server::Display;
 
+ok(OLED->setConfig({configFile => 't/server.conf'}), "Given test config");
+
 subtest "Validate heartbeat", sub {
   my $validationsDone = $OLED::Server::Display::statistics{invalidPrintRow} + $OLED::Server::Display::statistics{validPrintRow};
   my $display = OLED::Server::Display->new(OLED->config());
