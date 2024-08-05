@@ -5,6 +5,7 @@
 package OLog;
 
 use Modern::Perl;
+use utf8;
 use Carp qw(longmess);
 use Scalar::Util qw(blessed);
 use Data::Dumper;

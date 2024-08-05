@@ -1,6 +1,9 @@
 #!/usr/bin/perl
 
 use Modern::Perl;
+binmode(STDOUT, ':utf8');
+binmode(STDERR, ':utf8');
+use utf8;
 
 use Test::More;
 

@@ -3,6 +3,7 @@ package OLED::Server;
 use Modern::Perl;
 use threads;
 use threads::shared;
+use utf8;
 
 use base qw(Net::Server::Single);
 

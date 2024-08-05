@@ -3,9 +3,10 @@
 # Copyright 2016 Koha-Suomi
 #
 
-use utf8;
-use open ':std', ':encoding(utf8)';
 use Modern::Perl;
+binmode(STDOUT, ':utf8');
+binmode(STDERR, ':utf8');
+use utf8;
 use Carp;
 use Getopt::Long qw(:config no_ignore_case);
 use POSIX();

@@ -3,7 +3,9 @@ package OLED::Server::Display;
 use Modern::Perl;
 use threads;
 use threads::shared;
+use utf8;
 
+use Encode;
 use Text::Levenshtein::XS;
 use Text::Unidecode;
 use Time::HiRes;
@@ -71,6 +73,8 @@ our %dispatchTable = (
     printRow       => sub { $latestPrintRow = $_[1]; OLED::us2066::printRow($_[0], EncodePerlStringForDisplay($_[1])); },
     readRow        => sub { my $buffer = "                    ";
                             OLED::us2066::readRow($_[0], $buffer);
+                            $buffer = Encode::decode("UTF-8", $buffer);
+                            $buffer = DecodePerlStringForDisplay($buffer);
                             return $buffer;
                       },
     doubleLineText => sub { OLED::us2066::doubleLineText(@_) },
@@ -114,6 +118,20 @@ sub _splitMessage {
     } else {
         $l->warn("Unable to parse message '$msg'");
         return ('', []);
+    }
+}
+
+sub DecodePerlStringForDisplay {
+    my ($perlString) = @_;
+
+    if (OLED->config->CharacterEncodingScheme eq 'N') {
+        return OLED::us2066::ROM_A::translateOLEDString($perlString);
+    }
+    elsif (OLED->config->CharacterEncodingScheme eq 'U') {
+        return Text::Unidecode::unidecode($perlString);
+    }
+    else {
+        $l->logdie("Unknown CharacterEncodingScheme='".OLED->config->CharacterEncodingScheme."'!");
     }
 }
 

@@ -1,6 +1,7 @@
 package OLED::Client;
 
 use Modern::Perl;
+use utf8;
 
 use IO::Socket::UNIX;
 

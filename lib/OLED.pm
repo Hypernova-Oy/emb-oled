@@ -1,6 +1,8 @@
 package OLED;
 
 use Modern::Perl;
+use utf8;
+
 use Carp qw(confess);
 
 use Config::Simple;

@@ -1,6 +1,9 @@
 #!/usr/bin/perl
 
 use Modern::Perl;
+binmode(STDOUT, ':utf8');
+binmode(STDERR, ':utf8');
+use utf8;
 
 use Test::More;
 
@@ -30,16 +33,12 @@ sub oledDisplay {
     my $c = OLED->_loadConfig({configFile => 't/server.conf'});
     $display = OLED::Server::Display->new($c);
 
-    $reply = $display->handleMessage("printRow(0\t$rows[0]);");
-    is($reply, "200 OK", "Print row 1");
-    $reply = $display->handleMessage("printRow(1\t$rows[1]);");
-    is($reply, "200 OK", "Print row 2");
-    $reply = $display->handleMessage("printRow(2\t$rows[2]);");
-    is($reply, "200 OK", "Print row 3");
-    $reply = $display->handleMessage("printRow(3\t$rows[3]);");
-    is($reply, "200 OK", "Print row 4");
-    $reply = $display->handleMessage("readRow(3\t                    );");
-    is($reply, "200 OK $rows[3]", "Read row 4");
+    for (my $i=0 ; $i<4 ; $i++) {
+        $reply = $display->handleMessage("printRow($i\t$rows[$i]);");
+        is($reply, "200 OK", "Print row $i");
+        $reply = $display->handleMessage("readRow($i);");
+        is($reply, "200 OK $rows[$i]", "Read row $i");
+    }
 
     Time::HiRes::usleep(500000);
 

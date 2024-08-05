@@ -9,6 +9,7 @@ package t::IPC;
 
 use Carp qw(confess cluck);
 use Modern::Perl;
+use utf8;
 
 use OLED::Server;
 
