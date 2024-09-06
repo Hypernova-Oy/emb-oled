@@ -82,6 +82,7 @@ sub oledDisplayConnectionManagementThread {
 sub _oledDisplayConnectionManagementLoop {
   if (Time::HiRes::time() - $timeOfLastCall >= $OLED::config->Heartbeat_IdleBeforeHeartbeating()) {
     my $lines = OLED::PoemPlayer::feedRowsToDisplay();
+    display->_dispatchCall('clearDisplay', []); ## TODO: Hotfix to clear the screen before writing new poems as there is some strange bug with the Discrete Heartbeat style.
     if (OLED->config->Heartbeat_DisplayStyle eq 'D' &&
         OLED->config->ClearTimeout > OLED->config->Heartbeat_ScrollSpeedForNewLine) {
       display->_dispatchCall('clearDisplay', []);
